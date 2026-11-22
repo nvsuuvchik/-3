@@ -1,0 +1,16 @@
+.git
+.gitignore
+.gitattributes
+.env
+.env.*
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.tar.gz
+backups/
+scripts/
+README.md
+compose.yaml
+Dockerfile
+.dockerignore

@@ -1,0 +1,49 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_storage:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
+
+  app:
+    build: .
+    user: "1005:1005"
+    read_only: true
+    cpus: 1.0
+    mem_limit: 256m
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+    ports:
+      - "${APP_PORT:-8080}:8000"
+    environment:
+      PORT: "8000"
+      GREETING: "${GREETING:-Hello from HSE student!}"
+      STORAGE: "redis"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+
+volumes:
+  redis_storage:
